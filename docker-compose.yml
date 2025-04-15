@@ -1,0 +1,43 @@
+version: '3'
+services:
+  wallet:
+    build:
+      context: ./
+    tty: true
+    working_dir: /var/www/html
+    dns:
+    - 8.8.8.8
+    command: /bin/bash -c 'cd /var/www/html && chmod -R 777 ./storage && composer install && service cron start && supervisord -c supervisord.conf && apachectl -D FOREGROUND'
+    ports:
+    - "93:80"
+    volumes:
+    - ./:/var/www/html
+    networks:
+    - wallet_network
+  mysql:
+    image: mysql:8.0
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: 'wallet'
+    ports:
+      - "3304:3306"
+    volumes:
+      - ./scripts:/docker-entrypoint-initdb.d
+    networks:
+    - wallet_network
+  redis_wallet:
+    image: redis
+    volumes:
+    - redis_data:/data
+    command: redis-server --requirepass 1234
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PASSWORD=1234
+    networks:
+    - wallet_network
+volumes:
+    redis_data:
+networks:
+    wallet_network:
