@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Services\AuthorizationService;
-
+use App\Jobs\NotifyUser;
 
 class TransactionService
 {
@@ -44,6 +44,11 @@ class TransactionService
             ]);
 
             \DB::commit();
+
+            NotifyUser::dispatch($payee, [
+                'value' => $transaction->value,
+                'payer' => $payer->name
+            ])->onQueue('notify');
 
         } catch (\Throwable $th) {
             \DB::rollback();
