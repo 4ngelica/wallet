@@ -17,12 +17,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $type = fake()->randomElement(['individual', 'company']);
+        $name = ($type == 'individual') ? fake()->unique()->name() : fake()->unique()->company();
+        $document = ($type == 'individual') ? fake()->unique()->cpf(false) : fake()->unique()->cnpj(false);
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'document'=> fake()->unique()->numerify('###########'),
-            'type' => fake()->randomElement(['individual', 'company'])
-        ];
+            'name' => $name,
+            'email' => strtolower(str_replace(' ', '', $name)) . '@example.com',
+            'document'=> $document,
+            'type' => $type,
+            'password' => '1234'
+        ];  
+
     }
 
 }
