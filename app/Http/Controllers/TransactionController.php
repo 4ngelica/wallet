@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use Illuminate\Validation\ValidationException;
+use App\Jobs\ProcessTransaction;
+use \Illuminate\Auth\Access\AuthorizationException;
 
 class TransactionController extends Controller
 {
@@ -13,7 +15,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         try {
-
+                
             $request->validate(Transaction::rules(), Transaction::feedback());
 
             $transaction = new Transaction;
@@ -23,17 +25,25 @@ class TransactionController extends Controller
             $transaction->scheduled_date = $request->scheduled_date;
             $transaction->save();
 
-            return response($transaction, 200);
+            if(!empty($request->scheduled_date)){
+                ProcessTransaction::dispatch($transaction)->delay($transaction->scheduled_date);
+                return response(Transaction::find($transaction->id), 200);
+            }
 
-        }catch(ValidationException $e){
+            ProcessTransaction::dispatchSync($transaction);
+            return response(Transaction::find($transaction->id), 200);
+
+        } catch(ValidationException $e) {
             
             return response()->json([
                 "message" => "Erro ao realizar transferência",
                 "errors" => $e->errors()
             ], $e->status);
 
-        }
-        catch(\Throwable $e){
+        } catch(AuthorizationException $e) {
+            return response()->json(["message" => "Transferência não autorizada"], 403);
+        
+        } catch(\Throwable $e) {
             return response()->json(["message" => "Server error"], 500);
         }
 
@@ -82,7 +92,11 @@ class TransactionController extends Controller
                 return response()->json(["message" => "Operação não autorizada"], 403);
             }
     
-            $transaction->delete();
+            // clear job
+            $transaction->update([
+                "status" => "canceled"
+            ]);
+
             return response()->json(["message" => "Transação cancelada"], 200);
 
 
