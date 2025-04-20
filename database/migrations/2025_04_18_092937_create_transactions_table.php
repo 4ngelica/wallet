@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('payee_id');
             $table->integer('value');
             $table->enum('status', ['pending', 'completed', 'canceled'])->default('pending');
-            $table->date('scheduled_date')->nullable();
+            $table->datetime('scheduled_date')->nullable();
             $table->timestamps();
 
             $table->foreign('payer_id')->references('id')->on('users');

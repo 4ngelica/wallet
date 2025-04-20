@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 
@@ -23,4 +24,11 @@ Route::prefix('auth')->group(function(){
 
 Route::prefix('users')->group(function(){
     Route::post('/', [UserController::class, 'store' ]);
+});
+
+Route::prefix('transactions')->middleware('auth:sanctum')->group(function() {
+    Route::post('/', [TransactionController::class, 'store']);
+    Route::get('/', [TransactionController::class, 'index']);
+    Route::get('/{id}', [TransactionController::class, 'get']); 
+    Route::delete('/{id}', [TransactionController::class, 'destroy']);
 });
