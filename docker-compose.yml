@@ -7,7 +7,7 @@ services:
     working_dir: /var/www/html
     dns:
     - 8.8.8.8
-    command: /bin/bash -c 'cd /var/www/html && chmod -R 777 ./storage && composer install && service cron start && supervisord -c supervisord.conf && apachectl -D FOREGROUND'
+    command: /bin/bash -c 'cd /var/www/html && chmod -R 777 ./storage && composer install && supervisord -c supervisord.conf && apachectl -D FOREGROUND'
     ports:
     - "93:80"
     volumes:
@@ -27,17 +27,5 @@ services:
       - ./scripts:/docker-entrypoint-initdb.d
     networks:
     - wallet_network
-  redis_wallet:
-    image: redis
-    volumes:
-    - redis_data:/data
-    command: redis-server --requirepass 1234
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_PASSWORD=1234
-    networks:
-    - wallet_network
-volumes:
-    redis_data:
 networks:
     wallet_network:
