@@ -23,6 +23,12 @@ class Transaction extends Model
       'scheduled_date' => 'datetime'
     ];
 
+    
+    /**
+     * Retorna as regras de validação para uma transação
+     * 
+     * @return array
+     */
     public static function rules()
     {
 
@@ -35,6 +41,12 @@ class Transaction extends Model
 
     }
 
+
+    /**
+     * Retorna as mensagens de feedback para as regras de validação
+     * 
+     * @return array
+     */
     public static function feedback()
     {
       return [
@@ -49,11 +61,23 @@ class Transaction extends Model
 
     }
 
+
+    /**
+     * Relacionamento com o usuário pagador
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function payer()
     {
         return $this->hasOne(User::class, 'id', 'payer_id');
     }
 
+
+    /**
+     * Relacionamento com o usuário beneficiário
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function payee()
     {
         return $this->hasOne(User::class, 'id', 'payee_id');

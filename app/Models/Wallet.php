@@ -15,6 +15,12 @@ class Wallet extends Model
         'balance'
     ];
 
+    
+    /**
+     * Relacionamento com o modelo User
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function parent()
     {
         return $this->belongsTo(User::class, 'id', 'user_id');

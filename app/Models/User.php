@@ -38,29 +38,12 @@ class User extends Authenticatable
         'password' => 'hashed'
     ];
 
-    public static function rules() {
-        
-        return [
-            'name' => 'required',
-            'email'=> 'required|email|unique:users',
-            'document' => 'required|unique:users',
-            'type' => 'required|in:company,individual',
-            'password'=> 'required'
-        ];
 
-    }
-
-    public static function feedback() {
-        
-        return [
-            'required' => 'O atributo :atribute é obrigatório',
-            'email.unique'=> 'O email já foi registrado',
-            'document.unique'=> 'O documento já foi registrado',
-            'in' => 'Tipo não permitido'
-        ];
-
-    }
-
+    /**
+     * Relacionamento com a carteira
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function wallet()
     {
         return $this->hasOne(Wallet::class, 'user_id', 'id');

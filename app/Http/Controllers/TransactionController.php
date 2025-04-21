@@ -13,6 +13,12 @@ class TransactionController extends Controller
 {
 
 
+    /**
+     * Cria uma transferência entre contas.
+     * 
+     * @param Request $request Deve conter payee_id, value e scheduled_date (opcional)
+     * @return JsonResponse Retorna a transação criada ou mensagem de erro
+     */
     public function store(Request $request)
     {
         try {
@@ -52,6 +58,13 @@ class TransactionController extends Controller
 
     }
 
+
+    /**
+     * Listagem transações com paginação
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function index(Request $request)
     {
         try {
@@ -64,6 +77,13 @@ class TransactionController extends Controller
         }
     }
 
+
+    /**
+     * Busca uma transação pelo ID
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function get(Request $request)
     {
         try {
@@ -81,31 +101,4 @@ class TransactionController extends Controller
         }
     }
 
-    public function destroy(Request $request)
-    {
-        try {
-
-            $transaction = Transaction::find($request->id);
-
-            if(empty($transaction)){
-                return response(["status" => "error", "message" => "Não foi possível localizar a transação"], 404);
-            }
-    
-            if ($transaction->status !== 'pending') {
-                return response(["status" => "error", "message" => "Operação não autorizada"], 403);
-            }
-    
-            // clear job
-            $transaction->update([
-                "status" => "canceled"
-            ]);
-
-            return response()->json(["message" => "Transação cancelada"], 200);
-
-
-        } catch (\Throwable $th) {
-            return response(["status" => "error", "message" => "Erro de servidor"], 500);
-        }
-
-    }
 }

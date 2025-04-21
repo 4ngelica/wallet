@@ -22,13 +22,8 @@ Route::prefix('auth')->group(function(){
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
-Route::prefix('users')->group(function(){
-    Route::post('/', [UserController::class, 'store' ]);
-});
-
 Route::prefix('transactions')->middleware('auth:sanctum')->group(function() {
     Route::post('/', [TransactionController::class, 'store']);
     Route::get('/', [TransactionController::class, 'index']);
     Route::get('/{id}', [TransactionController::class, 'get']); 
-    Route::delete('/{id}', [TransactionController::class, 'destroy']);
 });
