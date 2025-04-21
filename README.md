@@ -1,66 +1,82 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<h3 align="center">Wallet</h3>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+   API Rest que simula transações financeiras entre carteiras de usuários.
 </p>
 
-## About Laravel
+## :pushpin: Requisitos
+- Docker
+- Docker Compose
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## :pushpin: Instalação
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Faça o download dos arquivos ou o clone desse repositório: <br>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+`git clone https://github.com/4ngelica/wallet.git`
 
-## Learning Laravel
+Renomeie o arquivo .env.example para .env e preencha as variáveis de ambiente:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    APP_KEY=
+    APP_DEBUG='true'
+    APP_ENV=local
+    APP_URL=http://{{IP}}:93
+    DB_CONNECTION=mysql
+    DB_DATABASE=wallet
+    DB_HOST={{IP}}
+    DB_PASSWORD=root
+    DB_PORT='3304'
+    DB_USERNAME=root
+    QUEUE_CONNECTION=database
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Na raíz do diretório, rode o comando a seguir para buildar e subir os containers, instalar as dependências, gerar a APP_KEY, executar as migrations e testes unitários. O banco será populado com dados de usuários de exemplo. Todos os usuários utilizarão a senha padrão (1234).<br>
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```sh
+sudo make install
+```
 
-## Laravel Sponsors
+## :pushpin: Documentação
+[Acesse a collection no Postman](https://www.postman.com/4ngelica/wallet/overview)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Premium Partners
+## :pushpin: Abordagem
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Este projeto foi desenvolvido utilizando Laravel 10 como framework, Docker para conteinerização e MySql para armazenamento dos dados e gerenciamento de filas.
 
-## Contributing
+O fluxo principal do código é baseado em uma API que recebe um POST com os dados necessários para realizar uma transação entre duas carteiras de usuários. 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    - Uma transação pendente é criada, caso atenda às regras de validação;
+    - O job ProcessTransaction é despachado de forma síncrona para a execução da transação;
+    - Uma vez autorizada, a transação é realizada;
+    - O job NotifyUser é despachado de forma assíncrona, para notificar o recebedor sobre a transferência;
+    - O recurso é retornado na resposta;
 
-## Code of Conduct
+Visto que os critérios de aceite mencionam a existência de senha na model do usuário, foi implementada uma autenticação simples utilizando o pacote do Sanctum, que já vem instalado no Laravel.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Uma vez autenticado, quem utiliza a API não precisa se identificar no corpo da requisição, já que essa informação pode ser extraída do token do usuário. Além disso, ao evitar o envio do identificador do usuário pela API, evita-se também a necessidade de validar se o valor recebido no body corresponde ao usuário autenticado, resultando em uma resposta mais rápida.
 
-## Security Vulnerabilities
+Como desafio, foi implementado um fluxo alternativo para agendamento de transação. Nesse fluxo, a transação é criada e o job ProcessTransaction é despachado de forma assíncrona, considerando a data informada como data de execução. Sendo assim para agendar uma transferência, deve-se informar uma data no campo opcional scheduled_date.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Para o sistema de filas, foi utilizada a abordagem baseada em banco de dados do Laravel. Essa escolha simplifica a infraestrutura mantendo todas as informações centralizadas. Para garantir a execução foi utilizado o Supervisor como monitor de processos, configurado para reiniciar automaticamente as workers em caso de falhas.
 
-## License
+## :pushpin: Modelagem dos Dados
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+As principais entidades relacionais são Carteira (wallet), Usuário (user) e Transação (transaction). Usuário e carteira possuem uma relação de 1:1 e Usuário e Transação possuem uma relação de N:N. Quando um novo registro de usuário é criado via seeder, uma carteira é associada a esse usuário, carregando como chave estrangeira a chave primária do usuário (user_id).
+
+Uma transação tem duas chaves estrangeiras: payer_id e payee_id. Essas chaves correspondem às chaves primárias do usuário que envia o dinheiro e o que recebe, respectivamente.
+
+Além disso, as tabelas job e failed_jobs são responsáveis por armazenar os Jobs referentes às filas default (usada no fluxo de agendamento de transferência) e notify (usada para envio da notificação de transferência recebida).
+
+<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/ERD.png"></p>
+
+## :pushpin: Próximos passos e possíveis melhorias
+ 
+- Incluir tabela de logs para armazenar informações dos jobs executados.
+- Outra opção para execução das filas seria utilizar o Redis, visando um processamento mais rápido em situações de overload;
+- Implementação de métodos destroy (e possivelmente update) para cancelar ou alterar transações agendadas. Esses métodos devem buscar e verificar o status das transações antes de performar qualquer alteração. Isso adiciona complexidade pois envolve identificar o job despachado.
+- Limitar o tamanho alocado para os campos VARCHAR do banco de dados, reduzindo disperdício e o tamanho total do banco;
+- Criar versionamento para a API
+
+## :pushpin: Referências
+- [Laravel 10](https://laravel.com/docs/10.x)
+- [Supervisor](https://laravel.com/docs/10.x/queues#supervisor-configuration)
+- [Docker](https://www.docker.com/)
