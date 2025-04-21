@@ -80,3 +80,4 @@ Além disso, as tabelas job e failed_jobs são responsáveis por armazenar os Jo
 - [Laravel 10](https://laravel.com/docs/10.x)
 - [Supervisor](https://laravel.com/docs/10.x/queues#supervisor-configuration)
 - [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
