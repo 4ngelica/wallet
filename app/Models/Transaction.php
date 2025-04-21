@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Rules\UserIsAllowed;
-use App\Rules\HasBalance;
+use App\Rules\CanSendMoney;
+use App\Rules\HasEnoughBalance;
 
 class Transaction extends Model
 {
@@ -25,11 +25,11 @@ class Transaction extends Model
 
     public static function rules()
     {
-      $payer_id = \Auth::user()->id;
-      
+
       return [
-        'payee_id' => ['required', 'exists:users,id', 'not_in:' . $payer_id, new UserIsAllowed()],
-        'value' => ['required', 'integer', new HasBalance()],
+        'payer_id' => ['required', 'exists:users,id', new CanSendMoney()],
+        'payee_id' => ['required', 'exists:users,id', 'different:payer_id'],
+        'value' => ['required', 'integer', new HasEnoughBalance()],
         'scheduled_date' => ['nullable', 'date', 'date_format:format,Y-m-d', 'after:'. now()]
       ];
 
@@ -40,10 +40,13 @@ class Transaction extends Model
       return [
         'required' => 'O atributo :attribute é obrigatório',
         'exists' => 'A carteira de destino não foi localizada',
-        'not_in' => 'Não é possível realizar transferências para a mesma carteira',
+        'different' => 'Não é possível realizar transferências para a mesma carteira',
         'date' => 'Data de agendamento inválida',
-        'after' => 'É permitido agendamento a partir de ' . now()->addDay()->format('Y-m-d')
+        'after' => 'É permitido agendamento a partir de ' . now()->addDay()->format('Y-m-d'),
+        'integer' => 'O atributo :attribute deve ser um inteiro',
+        'date_format' => 'Formato de data incorreto. Formato permitido: YYYY-MM-DD'
       ];
+
     }
 
     public function payer()

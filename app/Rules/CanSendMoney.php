@@ -5,7 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\DataAwareRule;
 
-class HasBalance implements DataAwareRule, Rule
+class CanSendMoney implements DataAwareRule, Rule
 {
 
     protected $data = [];
@@ -19,13 +19,12 @@ class HasBalance implements DataAwareRule, Rule
      */
     public function passes($attribute, $value)
     {
-        $payer = \Auth::user();
 
-        if ($payer->wallet()->first()->balance >= $value) {
-            return true;
+        if(\Auth::user()->type == 'company'){
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -35,7 +34,7 @@ class HasBalance implements DataAwareRule, Rule
      */
     public function message()
     {
-        return "Não há saldo suficiente para realizar a transferência";
+        return "Lojistas não podem realizar transferências";
     }
 
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Http\Client\ConnectionException;
 
 class NotificationService
 {
@@ -11,7 +12,7 @@ class NotificationService
         $res = \Http::post('https://util.devi.tools/api/v1/notify');
         
         if ($res->failed()) {
-            throw new \Exception($res->body());
+            throw new ConnectionException();
         }
 
         $value = number_format((float)($transactionData['value'] / 100), 2, '.', '');

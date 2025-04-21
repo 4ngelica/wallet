@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use Illuminate\Validation\ValidationException;
 use App\Jobs\ProcessTransaction;
-use \Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Client\ConnectionException;
 
 class TransactionController extends Controller
 {
@@ -15,36 +16,37 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         try {
-                
+            
+            $request->merge(['payer_id' => \Auth::user()->id]);
             $request->validate(Transaction::rules(), Transaction::feedback());
 
             $transaction = new Transaction;
-            $transaction->payer_id = \Auth::user()->id;
+            $transaction->payer_id = $request->payer_id;
             $transaction->payee_id = $request->payee_id;
             $transaction->value = $request->value;
             $transaction->scheduled_date = $request->scheduled_date;
             $transaction->save();
 
-            if(!empty($request->scheduled_date)){
+            empty($request->scheduled_date) ? ProcessTransaction::dispatchSync($transaction) :
                 ProcessTransaction::dispatch($transaction)->delay($transaction->scheduled_date);
-                return response(Transaction::find($transaction->id), 200);
-            }
 
-            ProcessTransaction::dispatchSync($transaction);
-            return response(Transaction::find($transaction->id), 200);
+            return response([
+                "status" => "success",
+                "transaction" => Transaction::find($transaction->id)
+            ], 201);
 
         } catch(ValidationException $e) {
-            
-            return response()->json([
-                "message" => "Erro ao realizar transferência",
-                "errors" => $e->errors()
-            ], $e->status);
+            $errors = $e->errors();
+            return response(["status" => "error", "message" => reset($errors)[0]], 422);
 
         } catch(AuthorizationException $e) {
-            return response()->json(["message" => "Transferência não autorizada"], 403);
-        
+            return response(["status" => "error", "message" => "Transferência não autorizada"], 403);
+
+        } catch(ConnectionException $e) {
+            return response(["status" => "error", "message" => "Serviço indisponível"], 503);
+
         } catch(\Throwable $e) {
-            return response()->json(["message" => "Server error"], 500);
+            return response(["status" => "error", "message" => "Erro de servidor"], 500);
         }
 
     }
@@ -57,7 +59,7 @@ class TransactionController extends Controller
             return response(Transaction::simplePaginate($pageSize), 200);
 
         } catch (\Throwable $th) {
-            return response()->json(["message" => "Server error"], 500);
+            return response(["status" => "error", "message" => "Erro de servidor"], 500);
         }
     }
 
@@ -68,13 +70,13 @@ class TransactionController extends Controller
             $transaction = Transaction::find($request->id);
             
             if(empty($transaction)){
-                return response()->json(["message" => "Não foi possível localizar a transação"], 404);
+                return response(["status" => "error", "message" => "Não foi possível localizar a transação"], 404);
             }
            
             return response(Transaction::find($request->id), 200);
 
         } catch (\Throwable $th) {
-            return response()->json(["message" => "Server error"], 500);
+            return response(["status" => "error", "message" => "Erro de servidor"], 500);
         }
     }
 
@@ -85,11 +87,11 @@ class TransactionController extends Controller
             $transaction = Transaction::find($request->id);
 
             if(empty($transaction)){
-                return response()->json(["message" => "Não foi possível localizar a transação"], 404);
+                return response(["status" => "error", "message" => "Não foi possível localizar a transação"], 404);
             }
     
             if ($transaction->status !== 'pending') {
-                return response()->json(["message" => "Operação não autorizada"], 403);
+                return response(["status" => "error", "message" => "Operação não autorizada"], 403);
             }
     
             // clear job
@@ -101,7 +103,7 @@ class TransactionController extends Controller
 
 
         } catch (\Throwable $th) {
-            return response()->json(["message" => "Server error"], 500);
+            return response(["status" => "error", "message" => "Erro de servidor"], 500);
         }
 
     }
