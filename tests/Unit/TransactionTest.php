@@ -89,7 +89,11 @@ class TransactionTest extends TestCase
             case 403:
                 $this->assertUnauthorizedTransfer($payer->id, $payee->id, $payerBalance, $payeeBalance, $value);
                 break;
-                
+
+            case 503:
+                $this->assertUnavailableService($payer->id, $payee->id, $payerBalance, $payeeBalance, $value);
+                break;
+
             case 500:
                 $this->assertFailedTransfer($payer->id, $payee->id, $payerBalance, $payeeBalance, $value);
                 break;
@@ -129,6 +133,10 @@ class TransactionTest extends TestCase
                 
             case 403:
                 $this->assertUnauthorizedTransfer($payer->id, $payee->id, $payerBalance, $payeeBalance, $value);
+                break;
+            
+            case 503:
+                $this->assertUnavailableService($payer->id, $payee->id, $payerBalance, $payeeBalance, $value);
                 break;
                 
             case 500:
@@ -285,6 +293,22 @@ class TransactionTest extends TestCase
             'payer_id' => $payerId,
             'payee_id' => $payeeId,
             'status' => 'pending'
+        ]);
+
+    }
+
+    /**
+     * Método para validar que a transação finaliza com sucesso
+     * independentemente do serviço de notificação 
+     * estar disponível ou não
+     * 
+     */
+    private function assertUnavailableService($payerId, $payeeId) : void
+    {
+        $this->assertDatabaseHas('transactions', [
+            'payer_id' => $payerId,
+            'payee_id' => $payeeId,
+            'status' => 'completed'
         ]);
 
     }
