@@ -32,6 +32,7 @@ class TransactionController extends Controller
 
             return response([
                 "status" => "success",
+                "message" => "Transferência realizada com sucesso",
                 "transaction" => Transaction::find($transaction->id)
             ], 201);
 
