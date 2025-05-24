@@ -74,7 +74,7 @@ ProcessTransaction Job and NotifyUser Job:
 The main relational entities are:
 
 - Wallet (1:1 with User)
-- User (N:N with Transaction)
+- User (1:N with Transaction, as a payer or payee)
 
 When a new user is created via the seeder, a wallet is automatically assigned (linked via user_id). Also, a transaction has two foreign keys:
 
