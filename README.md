@@ -77,15 +77,11 @@ Additionally, the jobs and failed_jobs tables store queue jobs (default queue fo
 
 ## :pushpin: Next Steps & Possible Improvements
  
-Add a logs table to track job executions.
-
-Consider Redis for faster queue processing under heavy loads.
-
-Implement destroy (and possibly update) methods to cancel/modify scheduled transactions. This adds complexity since it requires checking job statuses.
-
-Optimize database storage by limiting VARCHAR field sizes.
-
-Introduce API versioning.
+- Add a logs table to track job executions.
+- Consider Redis for faster queue processing under heavy loads.
+- Implement destroy (and possibly update) methods to cancel/modify scheduled transactions. This adds complexity since it requires checking job statuses.
+- Optimize database storage by limiting VARCHAR field sizes.
+- Introduce API versioning.
 
 ## :pushpin: References
 - [Laravel 10](https://laravel.com/docs/10.x)
