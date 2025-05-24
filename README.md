@@ -53,10 +53,10 @@ For the queue system, Laravel’s database-based queue driver was chosen. This s
 ## :pushpin: Flowcharts
 
 API Flow:
-<p align="center"><img width="60%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
+<p align="center"><img width="70%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
 
 ProcessTransaction Job and NotifyUser Job:
-<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/Jobs.png"></p>
+<p align="center"><img width="100%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/Jobs.png"></p>
 
 
 ## :pushpin: Data Modeling
