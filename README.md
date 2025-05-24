@@ -1,7 +1,7 @@
 <h3 align="center">Wallet</h3>
 
 <p align="center">
-A REST API that simulates financial transactions between user wallets.
+A REST API that simulates financial transfers between user wallets.
 </p>
 
 ## :pushpin: Requirements
@@ -37,6 +37,16 @@ sudo make install
 ## :pushpin: Documentation
 [Access the Postman collection here](https://www.postman.com/4ngelica/wallet/overview)
 
+## :pushpin: About the challenge
+- There are 2 types of users: individuals and companies. Both have a wallet with money and can make transfers between them.
+- For both user types, we require Full Name, CPF/CNPJ, email, and Password. CPF/CNPJ and emails must be unique in the system. Therefore, your system should only allow one registration per CPF/CNPJ or email address.
+- Users can send money (make transfers) to companies and between users.
+- Companies can only receive transfers; they cannot send money to anyone.
+- Validate if the user has sufficient balance before making a transfer.
+- Before completing a transfer, an external authorizer service must be consulted (GET https://util.devi.tools/api/v2/authorize).
+- The transfer operation must be transactional (i.e., rolled back in case of any inconsistency), and the money must be returned to the sender’s wallet.
+- Upon receiving a payment, the individual or company must be notified (via email, SMS) sent by a third-party service, which may occasionally be unavailable/unstable (POST https://util.devi.tools/api/v1/notify).
+- This service must be RESTful.
 
 ## :pushpin: Approach
 
