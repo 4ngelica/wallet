@@ -8,3 +8,5 @@ install:
 refresh:
 	docker-compose exec wallet sh -c "php artisan migrate:refresh"
 	docker-compose exec wallet sh -c "php artisan db:seed"
+test:
+	docker-compose exec wallet sh -c "php artisan test"
