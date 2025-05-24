@@ -42,21 +42,24 @@ sudo make install
 
 Este projeto foi desenvolvido utilizando Laravel 10 como framework, Docker para conteinerização e MySql para armazenamento dos dados e gerenciamento de filas.
 
-O fluxo principal do código é baseado em uma API que recebe um POST com os dados necessários para realizar uma transação entre duas carteiras de usuários. 
-
-    - Uma transação pendente é criada, caso atenda às regras de validação;
-    - O job ProcessTransaction é despachado de forma síncrona para a execução da transação;
-    - Uma vez autorizada, a transação é realizada;
-    - O job NotifyUser é despachado de forma assíncrona, para notificar o recebedor sobre a transferência;
-    - O recurso é retornado na resposta;
+O fluxo principal do código é baseado em uma API que recebe um POST com os dados necessários para realizar uma transferência entre duas carteiras de usuários. É possível fazer transações imediatas ou agendadas. Para agendar uma transferência, deve-se informar uma data no campo opcional scheduled_date.
 
 Visto que os critérios de aceite mencionam a existência de senha na model do usuário, foi implementada uma autenticação simples utilizando o pacote do Sanctum, que já vem instalado no Laravel.
 
 Uma vez autenticado, quem utiliza a API não precisa se identificar no corpo da requisição, já que essa informação pode ser extraída do token do usuário. Além disso, ao evitar o envio do identificador do usuário pela API, evita-se também a necessidade de validar se o valor recebido no body corresponde ao usuário autenticado, resultando em uma resposta mais rápida.
 
-Como desafio, foi implementado um fluxo alternativo para agendamento de transação. Nesse fluxo, a transação é criada e o job ProcessTransaction é despachado de forma assíncrona, considerando a data informada como data de execução. Sendo assim para agendar uma transferência, deve-se informar uma data no campo opcional scheduled_date.
-
 Para o sistema de filas, foi utilizada a abordagem baseada em banco de dados do Laravel. Essa escolha simplifica a infraestrutura mantendo todas as informações centralizadas. Para garantir a execução foi utilizado o Supervisor como monitor de processos, configurado para reiniciar automaticamente as workers em caso de falhas.
+
+## :pushpin: Fluxogramas
+
+Fluxo da API:
+<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
+
+ProcessTransaction Job:
+<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/ProcessTransaction.png"></p>
+
+NotifyUser Job:
+<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/NotifyUser.png"></p>
 
 ## :pushpin: Modelagem dos Dados
 
