@@ -1,20 +1,20 @@
 <h3 align="center">Wallet</h3>
 
 <p align="center">
-   API Rest que simula transações financeiras entre carteiras de usuários.
+A REST API that simulates financial transactions between user wallets.
 </p>
 
-## :pushpin: Requisitos
+## :pushpin: Requirements
 - Docker
 - Docker Compose
 
-## :pushpin: Instalação
+## :pushpin: Installation
 
-Faça o download dos arquivos ou o clone desse repositório: <br>
+Download the files or clone this repository: <br>
 
 `git clone https://github.com/4ngelica/wallet.git`
 
-Renomeie o arquivo .env.example para .env e preencha as variáveis de ambiente:
+Rename the .env.example file to .env and fill in the environment variables:
 
     APP_KEY=
     APP_DEBUG='true'
@@ -28,58 +28,66 @@ Renomeie o arquivo .env.example para .env e preencha as variáveis de ambiente:
     DB_USERNAME=root
     QUEUE_CONNECTION=database
 
-Na raíz do diretório, rode o comando a seguir para buildar e subir os containers, instalar as dependências, gerar a APP_KEY, executar as migrations e testes unitários. O banco será populado com dados de usuários de exemplo. Todos os usuários utilizarão a senha padrão (1234).<br>
+At the root directory, run the following command to build and start the containers, install dependencies, generate the APP_KEY, run migrations, and execute unit tests. The database will be seeded with example users, all using the default password (1234):<br>
 
 ```sh
 sudo make install
 ```
 
-## :pushpin: Documentação
-[Acesse a collection no Postman](https://www.postman.com/4ngelica/wallet/overview)
+## :pushpin: Documentation
+[Access the Postman collection here](https://www.postman.com/4ngelica/wallet/overview)
 
 
-## :pushpin: Abordagem
+## :pushpin: Approach
 
-Este projeto foi desenvolvido utilizando Laravel 10 como framework, Docker para conteinerização e MySql para armazenamento dos dados e gerenciamento de filas.
+This project was developed using Laravel 10 as the framework, Docker for containerization, and MySQL for data storage and queue management.
 
-O fluxo principal do código é baseado em uma API que recebe um POST com os dados necessários para realizar uma transferência entre duas carteiras de usuários. É possível fazer transações imediatas ou agendadas. Para agendar uma transferência, deve-se informar uma data no campo opcional scheduled_date.
+The core logic revolves around an API that receives a POST request with the necessary data to execute a transfer between two user wallets. Transactions can be processed immediately or scheduled. To schedule a transfer, provide a date in the optional scheduled_date field.
 
-Visto que os critérios de aceite mencionam a existência de senha na model do usuário, foi implementada uma autenticação simples utilizando o pacote do Sanctum, que já vem instalado no Laravel.
+Since the acceptance criteria mention password protection for the user model, a simple authentication system was implemented using Laravel Sanctum (pre-installed with Laravel).
 
-Uma vez autenticado, quem utiliza a API não precisa se identificar no corpo da requisição, já que essa informação pode ser extraída do token do usuário. Além disso, ao evitar o envio do identificador do usuário pela API, evita-se também a necessidade de validar se o valor recebido no body corresponde ao usuário autenticado, resultando em uma resposta mais rápida.
+Once authenticated, API users do not need to identify themselves in the request body, as this information is extracted from their token. This approach also avoids validating whether the payer ID in the request matches the authenticated user, improving response speed.
 
-Para o sistema de filas, foi utilizada a abordagem baseada em banco de dados do Laravel. Essa escolha simplifica a infraestrutura mantendo todas as informações centralizadas. Para garantir a execução foi utilizado o Supervisor como monitor de processos, configurado para reiniciar automaticamente as workers em caso de falhas.
+For the queue system, Laravel’s database-based queue driver was chosen. This simplifies infrastructure by keeping all data centralized. Supervisor was configured to monitor and automatically restart queue workers in case of failures.
 
-## :pushpin: Fluxogramas
+## :pushpin: Flowcharts
 
-Fluxo da API:
-<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
+API Flow:
+<p align="center"><img width="60%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
 
-ProcessTransaction Job:
-<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/ProcessTransaction.png"></p>
+ProcessTransaction Job and NotifyUser Job:
+<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/Jobs.png"></p>
 
-NotifyUser Job:
-<p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/NotifyUser.png"></p>
 
-## :pushpin: Modelagem dos Dados
+## :pushpin: Data Modeling
 
-As principais entidades relacionais são Carteira (wallet), Usuário (user) e Transação (transaction). Usuário e carteira possuem uma relação de 1:1 e Usuário e Transação possuem uma relação de N:N. Quando um novo registro de usuário é criado via seeder, uma carteira é associada a esse usuário, carregando como chave estrangeira a chave primária do usuário (user_id).
+The main relational entities are:
 
-Uma transação tem duas chaves estrangeiras: payer_id e payee_id. Essas chaves correspondem às chaves primárias do usuário que envia o dinheiro e o que recebe, respectivamente.
+- Wallet (1:1 with User)
+- User (N:N with Transaction)
 
-Além disso, as tabelas job e failed_jobs são responsáveis por armazenar os Jobs referentes às filas default (usada no fluxo de agendamento de transferência) e notify (usada para envio da notificação de transferência recebida).
+When a new user is created via the seeder, a wallet is automatically assigned (linked via user_id). Also, a transaction has two foreign keys:
+
+- payer_id → Sender’s user_id
+- payee_id → Recipient’s user_id
+
+Additionally, the jobs and failed_jobs tables store queue jobs (default queue for scheduled transfers and notify queue for transfer notifications).
 
 <p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/ERD.png"></p>
 
-## :pushpin: Próximos passos e possíveis melhorias
+## :pushpin: Next Steps & Possible Improvements
  
-- Incluir tabela de logs para armazenar informações dos jobs executados.
-- Outra opção para execução das filas seria utilizar o Redis, visando um processamento mais rápido em situações de overload;
-- Implementação de métodos destroy (e possivelmente update) para cancelar ou alterar transações agendadas. Esses métodos devem buscar e verificar o status das transações antes de performar qualquer alteração. Isso adiciona complexidade pois envolve identificar o job despachado.
-- Limitar o tamanho alocado para os campos VARCHAR do banco de dados, reduzindo disperdício e o tamanho total do banco;
-- Criar versionamento para a API
+Add a logs table to track job executions.
 
-## :pushpin: Referências
+Consider Redis for faster queue processing under heavy loads.
+
+Implement destroy (and possibly update) methods to cancel/modify scheduled transactions. This adds complexity since it requires checking job statuses.
+
+Optimize database storage by limiting VARCHAR field sizes.
+
+Introduce API versioning.
+
+## :pushpin: References
 - [Laravel 10](https://laravel.com/docs/10.x)
 - [Supervisor](https://laravel.com/docs/10.x/queues#supervisor-configuration)
 - [Docker](https://www.docker.com/)
