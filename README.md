@@ -60,15 +60,6 @@ Once authenticated, API users do not need to identify themselves in the request 
 
 For the queue system, Laravel’s database-based queue driver was chosen. This simplifies infrastructure by keeping all data centralized. Supervisor was configured to monitor and automatically restart queue workers in case of failures.
 
-## :pushpin: Flowcharts
-
-API Flow:
-<p align="center"><img width="70%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
-
-ProcessTransaction Job and NotifyUser Job:
-<p align="center"><img width="100%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/Jobs.png"></p>
-
-
 ## :pushpin: Data Modeling
 
 The main relational entities are:
@@ -84,6 +75,14 @@ When a new user is created via the seeder, a wallet is automatically assigned (l
 Additionally, the jobs and failed_jobs tables store queue jobs (default queue for scheduled transfers and notify queue for transfer notifications).
 
 <p align="center"><img width="80%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/ERD.png"></p>
+
+## :pushpin: Flowcharts
+
+API Flow:
+<p align="center"><img width="70%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/API.png"></p>
+
+ProcessTransaction Job and NotifyUser Job:
+<p align="center"><img width="100%" src="https://raw.githubusercontent.com/4ngelica/wallet/refs/heads/master/storage/images/Jobs.png"></p>
 
 ## :pushpin: Next Steps & Possible Improvements
  
